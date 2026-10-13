@@ -1,21 +1,72 @@
-# Requirements
+# deluge_block
+
+Automatically scan Deluge every 60 seconds for torrents containing configured
+file extensions.
+
+## Requirements
+
+```bash
 pip install deluge-client
+```
 
+## Configuration
 
-# To run the script
+Copy `config-sample.ini` to `config.ini`, then update the Deluge RPC connection
+settings and extension lists.
 
-First edit the config-sample.ini file and save it as config.ini
-Then just run block.ini
+```ini
+[login]
+host=<host>
+port=58846
+user=<username>
+password=<password>
 
+[lists]
+forbidden=.zipx,.mkv.lnk,.exe,.bat,.msi
+unwanted=.txt,.nfo,.jpg,.png,.gif,.html
 
-# What it does
+[behavior]
+delete_downloaded_data=false
+```
 
-Torrents that contain files with extensions in the "Forbidden" list will automatically be _removed_ from deluge.  This is to stop viruses or other unwanted content.
+Extension matching is case-insensitive, and whitespace around configured
+extensions is ignored.
 
-Torrents that contain files in the "unwanted" list will have those specific files flagged to Skip, but the torrent will be left alone.  This is to disable unwanted artwork, text files, etc that may come along with a torrent.
+## Behavior
 
-The script will check deluge every 60s to apply changes.
+Torrents that contain any file with an extension in the `forbidden` list are
+removed from Deluge. Forbidden files take precedence even if the file is already
+set to Skip priority.
 
-# THanks
+By default, removing a forbidden torrent does not delete downloaded data. Set
+`delete_downloaded_data=true` only if you want `core.remove_torrent` to remove
+the torrent and delete downloaded data.
 
-Thanks to https://github.com/dcquence/deluge_exclude_files for getting this started!
+Torrents that do not contain forbidden files are kept. Files with extensions in
+the `unwanted` list are set to Skip priority (`0`), while all other file
+priorities are preserved.
+
+If Deluge has not exposed a torrent's file metadata yet, or if the file and
+priority counts do not match, the torrent is not cached and will be checked
+again on a later scan.
+
+## Running
+
+```bash
+python block.py
+```
+
+The script keeps running and scans Deluge every 60 seconds.
+
+## Tests
+
+Tests use mocked Deluge RPC calls and never modify real torrents.
+
+```bash
+python -m unittest discover -v
+```
+
+## Thanks
+
+Thanks to https://github.com/dcquence/deluge_exclude_files for getting this
+started.
