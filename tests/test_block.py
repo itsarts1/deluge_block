@@ -190,7 +190,7 @@ class TorrentBlockerTests(unittest.TestCase):
 
 
 class ConfigTests(unittest.TestCase):
-    def test_load_config_uses_safe_delete_data_default(self):
+    def test_load_config_uses_safe_defaults(self):
         contents = """
 [login]
 host=localhost
@@ -209,7 +209,31 @@ unwanted=.jpg
             settings = block.load_config(config_path)
 
         self.assertFalse(settings.delete_downloaded_data)
+        self.assertEqual(settings.scan_interval_seconds, 10)
         self.assertEqual(settings.forbidden_extensions, [".exe", ".exe"])
+
+    def test_load_config_accepts_scan_interval_override(self):
+        contents = """
+[login]
+host=localhost
+port=58846
+user=localclient
+password=secret
+
+[lists]
+forbidden=.exe
+unwanted=.jpg
+
+[behavior]
+scan_interval_seconds=5
+"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "config.ini"
+            config_path.write_text(contents, encoding="utf-8")
+
+            settings = block.load_config(config_path)
+
+        self.assertEqual(settings.scan_interval_seconds, 5)
 
     def test_missing_required_config_reports_key_without_password_value(self):
         contents = """

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 
 CONFIG_FILE = "config.ini"
-SCAN_INTERVAL_SECONDS = 60
+SCAN_INTERVAL_SECONDS = 10
 STATUS_KEYS = ["name", "files", "file_priorities"]
 
 logger = logging.getLogger(__name__)
@@ -95,6 +95,16 @@ def load_config(path=CONFIG_FILE):
     except ValueError as error:
         raise ConfigError("[behavior] delete_downloaded_data must be true or false.") from error
 
+    try:
+        scan_interval_seconds = parser.getint(
+            "behavior", "scan_interval_seconds", fallback=SCAN_INTERVAL_SECONDS
+        )
+    except ValueError as error:
+        raise ConfigError("[behavior] scan_interval_seconds must be a number.") from error
+
+    if scan_interval_seconds < 1:
+        raise ConfigError("[behavior] scan_interval_seconds must be at least 1.")
+
     host = parser.get("login", "host").strip()
     user = parser.get("login", "user").strip()
     password = parser.get("login", "password")
@@ -114,6 +124,7 @@ def load_config(path=CONFIG_FILE):
         forbidden_extensions=normalize_extensions(parser.get("lists", "forbidden")),
         unwanted_extensions=normalize_extensions(parser.get("lists", "unwanted")),
         delete_downloaded_data=delete_downloaded_data,
+        scan_interval_seconds=scan_interval_seconds,
     )
 
 

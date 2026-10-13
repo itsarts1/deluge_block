@@ -1,6 +1,6 @@
 # deluge_block
 
-Automatically scan Deluge every 60 seconds for torrents containing configured
+Automatically scan Deluge every 10 seconds for torrents containing configured
 file extensions.
 
 ## Requirements
@@ -27,6 +27,7 @@ unwanted=.txt,.nfo,.jpg,.png,.gif,.html
 
 [behavior]
 delete_downloaded_data=false
+scan_interval_seconds=10
 ```
 
 Extension matching is case-insensitive, and whitespace around configured
@@ -56,7 +57,8 @@ again on a later scan.
 python block.py
 ```
 
-The script keeps running and scans Deluge every 60 seconds.
+The script keeps running and scans Deluge every 10 seconds by default. Change
+`scan_interval_seconds` in `config.ini` to use a different interval.
 
 ## Tests
 
